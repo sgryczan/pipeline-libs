@@ -19,7 +19,7 @@ def call(String buildStatus = 'STARTED', String channel = '#info-shared-services
   def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.RUN_DISPLAY_URL}|Open>) (<${env.RUN_CHANGES_DISPLAY_URL}|  Changes>)'"
   def title = "${env.JOB_NAME} Build: ${env.BUILD_NUMBER}"
   def title_link = "${env.RUN_DISPLAY_URL}"
-  def branchName = "${env.BRANCH_NAME}"
+  def branchName = "${env.GIT_BRANCH}"
 
   def commit = sh(returnStdout: true, script: 'git rev-parse HEAD')
   def author = sh(returnStdout: true, script: "git --no-pager show -s --format='%an'").trim()
@@ -40,31 +40,6 @@ def call(String buildStatus = 'STARTED', String channel = '#info-shared-services
     color = 'RED'
     colorCode = 'danger'
   }
-
-  // get test results for slack message
-  @NonCPS
-  def getTestSummary = { ->
-    def testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
-    def summary = ""
-
-    if (testResultAction != null) {
-        def total = testResultAction.getTotalCount()
-        def failed = testResultAction.getFailCount()
-        def skipped = testResultAction.getSkipCount()
-
-        summary = "Test results:\n\t"
-        summary = summary + ("Passed: " + (total - failed - skipped))
-        summary = summary + (", Failed: " + failed + " ${testResultAction.failureDiffString}")
-        summary = summary + (", Skipped: " + skipped)
-    } else {
-        summary = "No tests found"
-    }
-    return summary
-  }
-  def testSummaryRaw = getTestSummary()
-  // format test summary as a code block
-  def testSummary = "```${testSummaryRaw}```"
-  println testSummary.toString()
 
   JSONObject attachment = new JSONObject();
   attachment.put('author',"jenkins");
@@ -89,12 +64,7 @@ def call(String buildStatus = 'STARTED', String channel = '#info-shared-services
   commitMessage.put('title', 'Commit Message');
   commitMessage.put('value', message.toString());
   commitMessage.put('short', false);
-  // JSONObject for test results
-  JSONObject testResults = new JSONObject();
-  testResults.put('title', 'Test Summary')
-  testResults.put('value', testSummary.toString())
-  testResults.put('short', false)
-  attachment.put('fields', [branch, commitAuthor, commitMessage, testResults]);
+  attachment.put('fields', [branch, commitAuthor, commitMessage]);
   JSONArray attachments = new JSONArray();
   attachments.add(attachment);
   println attachments.toString()
