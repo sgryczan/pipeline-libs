@@ -6,7 +6,7 @@ import net.sf.json.JSONObject;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.model.Actionable;
 
-def notifySlack(String buildStatus = 'STARTED', String channel = '#info-shared-services-sre') {
+def call(String buildStatus = 'STARTED', String channel = '#info-shared-services-sre') {
 
   // buildStatus of null means successfull
   buildStatus = buildStatus ?: 'SUCCESSFUL'
