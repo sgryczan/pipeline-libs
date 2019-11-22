@@ -33,6 +33,9 @@ def call(String buildStatus = 'STARTED', String channel = '#info-shared-services
   } else if (buildStatus == 'SUCCESSFUL') {
     color = 'GREEN'
     colorCode = 'good'
+  } else if (buildStatus == 'SUCCESS') {
+    color = 'GREEN'
+    colorCode = 'good'
   } else if (buildStatus == 'UNSTABLE') {
     color = 'YELLOW'
     colorCode = 'warning'
